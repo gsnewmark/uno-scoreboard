@@ -1,0 +1,13 @@
+/target
+/out
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+.lein-*
+.repl
+.nrepl-port
+
+.DS_Store
