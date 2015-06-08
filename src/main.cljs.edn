@@ -1,3 +1,0 @@
-{:require  [uno-scoreboard.app]
- :init-fns [uno-scoreboard.app/start]
- :compiler-options {}}
