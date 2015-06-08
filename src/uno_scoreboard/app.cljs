@@ -73,7 +73,7 @@
    (player-score name max-score score)])
 
 (rum/defc scoreboard < rum/reactive [data]
-  [:div.scoreboard
+  [:div.scoreboard.container-fluid
    (max-score (:max-score (rum/react data)))
    [:hr]
    (for [[name score] (:players (rum/react data))]
