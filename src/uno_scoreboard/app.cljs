@@ -26,7 +26,7 @@
 
 (rum/defcs editable < (rum/local ::show) [state type label value callback]
   (let [mode (:rum/local state)]
-    [:div.editable label
+    [:span.editable label
      (if (= ::show @mode)
        [:span
         {:on-click (fn [_] (reset! mode ::edit))}
@@ -38,8 +38,12 @@
 
 
 (rum/defc max-score [score]
-  (editable "number" "Maximum score: " score
-            #(put! events [:new-max-score (js/parseInt %)])))
+  [:div
+   (editable "number" "Maximum score: " score
+             #(put! events [:new-max-score (js/parseInt %)]))
+   [:button.btn.btn-link.btn-xs.reset-scores
+    {:on-click #(put! events [:reset-scores])}
+    [:span.glyphicon.glyphicon-repeat {:aria-hidden true}]]])
 
 (rum/defcs player-score < (rum/local 0) [state name max-score score]
   (let [s (:rum/local state)]
@@ -70,6 +74,9 @@
   [:div.player
    (editable "type" "" name
              #(put! events [:new-player-name name %]))
+   [:button.btn.btn-link.btn-xs.remove-player
+    {:on-click #(put! events [:remove-player name])}
+    [:span.glyphicon.glyphicon-remove-sign {:aria-hidden true}]]
    (player-score name max-score score)])
 
 (rum/defc scoreboard < rum/reactive [data]
@@ -78,18 +85,30 @@
    [:hr]
    (for [[name score] (:players (rum/react data))]
      (rum/with-props player
-       (:max-score (rum/react data)) name score :rum/key [name]))])
+       (:max-score (rum/react data)) name score :rum/key [name]))
+   [:button.btn.btn-info
+    {:on-click #(put! events [:add-new-player])}
+    "Add new player"]])
 
 
 (defn update-player [data predicate updater]
   (update-in data [:players]
-             (partial map
-                      (fn [player]
-                        (if (predicate player)
-                          (updater player)
-                          player)))))
+             #(->> %
+                   (map
+                    (fn [player]
+                      (if (predicate player)
+                        (updater player)
+                        player)))
+                   (filterv (complement nil?)))))
 
 (defn same-name? [name] (fn [[n _]] (= n name)))
+
+(defn new-name [names]
+  (loop [idx (count names)]
+    (let [name (str "Player " idx)]
+      (if (names name)
+        (recur (inc idx))
+        name))))
 
 (defn start-event-listener [events-chan data]
   (go-loop []
@@ -111,6 +130,15 @@
             (swap! data update-player
                    (same-name? player)
                    (fn [[name score]] [name (+ score score-addition)]))))
+        :reset-scores
+        (swap! data update-in [:players] (partial mapv (fn [[p s]] [p 0])))
+        :add-new-player
+        (let [names (into #{} (map first (:players @data)))
+              name (new-name names)]
+          (swap! data update-in [:players] conj [name 0]))
+        :remove-player
+        (let [[player] args]
+          (swap! data update-player (same-name? player) (constantly nil)))
         (.warn js/console (str "Don't know how to handle event: "
                                event)))
       (recur))))
