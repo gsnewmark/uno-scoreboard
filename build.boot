@@ -1,6 +1,6 @@
 (task-options!
   pom {:project     'uno-scoreboard
-       :version     "0.1.1"
+       :version     "0.2.0"
        :description "A simple scoreboad for the Uno game"
        :url         "https://gsnewmark.github.io/uno-scoreboard"
        :scm         {:url "https://github.com/gsnewmark/uno-scoreboard"}
