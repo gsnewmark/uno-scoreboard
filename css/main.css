@@ -6,3 +6,11 @@ body { -webkit-animation: androidBugfix infinite 1s; }
 .editable {
   cursor: pointer;
 }
+
+.remove-player {
+  color: red;
+}
+
+.reset-scores {
+  color: red;
+}
